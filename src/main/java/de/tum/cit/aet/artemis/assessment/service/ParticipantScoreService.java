@@ -91,10 +91,12 @@ public class ParticipantScoreService {
         exam.getExerciseGroups().stream().map(ExerciseGroup::getExercises).forEach(exercisesOfExam::addAll);
         Set<Exercise> includedExercises = exercisesOfExam.stream().filter(exercise -> !exercise.getIncludedInOverallScore().equals(IncludedInOverallScore.NOT_INCLUDED))
                 .collect(Collectors.toSet());
-
         Set<User> registeredUsers = exam.getRegisteredUsers();
 
-        return calculateScores(includedExercises, registeredUsers, (double) exam.getExamMaxPoints(), 0.0, null);
+        // Recompute denominator from included exercises to ensure quiz exercises are counted
+        double denominator = includedExercises.stream().mapToDouble(Exercise::getMaxPoints).sum();
+
+        return calculateScores(includedExercises, registeredUsers, denominator, 0.0, null);
     }
 
     /**
